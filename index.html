@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Suivi application primer activator et collage vitre pare-brise et assemblage porte</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Cairo", sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+      padding: 10px;
+      margin: 0;
+      touch-action: manipulation;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 100%;
+      margin: 0 auto 20px;
+    }
+    h1 { 
+      color: #333; 
+      font-size: 1.4rem;
+      margin: 0 0 15px 0;
+    }
+    .info { 
+      margin: 8px 0; 
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      -webkit-appearance: none;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      min-height: 44px;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    button:hover { background: #0056b3; }
+    .sync-section {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .operations-section {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      background: #fff3cd;
+      border-radius: 8px;
+    }
+    .operation-btn {
+      width: 100%;
+      margin: 4px 0;
+      padding: 14px;
+      background: #28a745;
+      font-size: 16px;
+    }
+    .operation-btn:hover {
+      background: #218838;
+    }
+    .product-section {
+      margin: 12px 0;
+      padding: 12px;
+      background: #d1ecf1;
+      border-radius: 8px;
+    }
+    .montage-inputs {
+      margin: 8px 0;
+    }
+    .montage-inputs input {
+      margin: 4px 0;
+    }
+    .session-info {
+      background: #d4edda;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #c3e6cb;
+      font-size: 14px;
+    }
+    .logout-btn {
+      background: #dc3545 !important;
+    }
+    .logout-btn:hover {
+      background: #c82333 !important;
+    }
+    .manual-edit-section {
+      background: #fff3cd;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+    }
+    .operation-item {
+      display: flex;
+      flex-direction: column;
+      margin: 8px 0;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      gap: 8px;
+    }
+    .operation-label {
+      text-align: left;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .operation-time-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .operation-action {
+      display: flex;
+      gap: 8px;
+    }
+    .operation-action button {
+      flex: 1;
+    }
+    .product-numbers-section {
+      margin: 8px 0;
+      padding: 10px;
+      background: #e7f3ff;
+      border-radius: 5px;
+    }
+    .disabled-btn {
+      background: #6c757d !important;
+      cursor: not-allowed !important;
+    }
+    .disabled-btn:hover {
+      background: #6c757d !important;
+    }
+    .scan-section {
+      margin: 10px 0;
+      padding: 10px;
+      background: #e8f5e8;
+      border-radius: 8px;
+      border: 2px dashed #28a745;
+    }
+    .camera-container {
+      width: 100%;
+      height: 250px;
+      margin: 10px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+    }
+    .scan-btn {
+      background: #17a2b8 !important;
+      margin: 5px 0;
+    }
+    .scan-btn:hover {
+      background: #138496 !important;
+    }
+    .stop-scan-btn {
+      background: #dc3545 !important;
+      margin: 5px 0;
+    }
+    .barcode-result {
+      background: #fff3cd;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border-left: 4px solid #ffc107;
+      font-weight: bold;
+    }
+    
+    /* Search Section Styles */
+    .search-section {
+      margin: 15px 0;
+      padding: 15px;
+      background: #e7f3ff;
+      border-radius: 8px;
+      border: 2px solid #007bff;
+    }
+    .search-tabs {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #007bff;
+    }
+    .search-tab {
+      flex: 1;
+      padding: 10px;
+      background: #f8f9fa;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .search-tab.active {
+      background: #007bff;
+      color: white;
+      border-bottom: 2px solid #0056b3;
+    }
+    .report-section {
+      margin-top: 15px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .report-item {
+      padding: 10px;
+      margin: 8px 0;
+      background: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #007bff;
+    }
+    .report-header {
+      background: #007bff;
+      color: white;
+      padding: 12px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .operation-record {
+      padding: 8px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+    .location-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #28a745;
+      color: white;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    .montage-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #6f42c1;
+      color: white;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    .pji-info {
+      background: #e7f3ff;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border-left: 4px solid #17a2b8;
+    }
+    
+    /* Responsive Design */
+    @media (min-width: 768px) {
+      .card {
+        max-width: 600px;
+        padding: 20px;
+      }
+      .operation-item {
+        flex-direction: row;
+        align-items: center;
+      }
+      .operation-label {
+        flex: 2;
+      }
+      .operation-time-input {
+        flex: 1;
+        margin: 0 5px;
+      }
+      .operation-action {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Page principale -->
+  <div class="card" id="mainPage">
+    <h1> Suivi application primer activator et </h1>
+    <h1> collage vitre pare-brise et assemblage porte</h1>
+    
+    <!-- Informations de session active -->
+    <div id="activeSessionInfo" class="session-info" style="display:none;">
+      <strong>🔄 Session Active</strong>
+      <div id="sessionDetails"></div>
+      <button id="logoutBtn" class="logout-btn" style="width: auto; padding: 8px 16px; margin-top: 8px;">Terminer la Session</button>
+    </div>
+
+    <div class="info" id="weekInfo"></div>
+    <div class="info" id="dateInfo"></div>
+    <div class="info" id="timeInfo"></div>
+    <div class="info"><strong>Shift:</strong> <span id="shift"></span></div>
+    <div class="info"><strong>Équipe:</strong> <span id="team"></span></div>
+    <div class="info"><strong>👷 OPS:</strong> <span id="supervisor"></span></div>
+
+    <input type="text" id="operatorName" placeholder="Nom de l'opérateur">
+    <input type="text" id="assistantName" placeholder="Nom de l'assistant">
+    <select id="workLocation">
+      <option value="">Sélectionnez le poste de travail</option>
+      <option value="Assemblage Porte">Assemblage Porte</option>
+      <option value="Montage vitres">Montage vitres</option>
+      <option value="Montage porte">Montage porte</option>
+      <option value="Parebrise">Parebrise</option>
+    </select>
+    
+    <button id="insertBtn">Démarrer la Session</button>
+    <button id="editBtn">Modification manuelle</button>
+    <button id="searchBtn" style="background: #6f42c1;">🔍 Recherche et Rapports</button>
+
+    <!-- Section de recherche (cachée initialement) -->
+    <div id="searchSection" class="search-section" style="display:none;">
+      <h3>🔍 Recherche et Rapports</h3>
+      
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="switchSearchTab('product')">Recherche par Product Number</button>
+        <button class="search-tab" onclick="switchSearchTab('pji')">Recherche par PJI Number</button>
+      </div>
+
+      <!-- Recherche par Product Number -->
+      <div id="productSearchTab" class="search-tab-content">
+        <h4>Recherche par Product Number</h4>
+        <input type="text" id="searchProductNumber" placeholder="Entrez le Product Number">
+        <button onclick="searchByProductNumber()" style="background: #28a745;">🔍 Rechercher</button>
+      </div>
+
+      <!-- Recherche par PJI Number -->
+      <div id="pjiSearchTab" class="search-tab-content" style="display:none;">
+        <h4>Recherche par PJI Number</h4>
+        <input type="text" id="searchPjiNumber" placeholder="Entrez le PJI Number">
+        <button onclick="searchByPjiNumber()" style="background: #17a2b8;">🔍 Rechercher</button>
+      </div>
+
+      <!-- Résultats de recherche -->
+      <div id="searchResults" class="report-section" style="display:none;">
+        <div id="resultsContent"></div>
+      </div>
+
+      <button id="backFromSearchBtn" style="background: #6c757d; margin-top: 15px;">← Retour au Menu Principal</button>
+    </div>
+
+    <!-- Section des opérations (cachée initialement) -->
+    <div id="operationsSection" class="operations-section">
+      <h3>🔧 Opérations - <span id="currentLocation"></span></h3>
+      
+      <div class="product-section">
+        <div class="product-numbers-section">
+          <!-- Section Scan Code Bar -->
+          <div class="scan-section">
+            <h4>📷 Scanner le Code Bar</h4>
+            <div id="cameraContainer" class="camera-container" style="display:none;"></div>
+            <div id="barcodeResult" class="barcode-result" style="display:none;"></div>
+            <button id="startScanBtn" class="scan-btn">Ouvrir la Caméra</button>
+            <button id="stopScanBtn" class="stop-scan-btn" style="display:none;">Fermer la Caméra</button>
+          </div>
+
+          <!-- Champ de saisie manuelle -->
+          <div style="margin-top: 15px;">
+            <input type="text" id="pjiProductNumber" placeholder="Ou saisir manuellement le numéro PJI">
+            <button id="validateProductBtn">Valider le Produit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assemblage Porte Operations -->
+      <div id="assemblagePorteOperations" style="display:none;">
+        <h4>Assemblage Porte - Opérations</h4>
+        <div class="operation-item">
+          <div class="operation-label">Premier plastique</div>
+          <input type="datetime-local" id="assemblage_premier_plastique_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('premier_plastique', 'assemblage_premier_plastique_time')">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Montage Vitres Operations -->
+      <div id="montageVitresOperations" style="display:none;">
+        <h4>Montage Vitres - Opérations</h4>
+        <div class="operation-item">
+          <div class="operation-label">Activateur plastique</div>
+          <input type="datetime-local" id="montage_activateur_plastique_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('activateur_plastique', 'montage_activateur_plastique_time')">Enregistrer</button>
+          </div>
+        </div>
+        <div class="operation-item">
+          <div class="operation-label">Premier vitre</div>
+          <input type="datetime-local" id="montage_premier_vitre_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('premier_vitre', 'montage_premier_vitre_time')">Enregistrer</button>
+          </div>
+        </div>
+        <div class="operation-item">
+          <div class="operation-label">Collage vitre</div>
+          <input type="datetime-local" id="montage_collage_vitre_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('collage_vitre', 'montage_collage_vitre_time')">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Montage Porte Operations -->
+      <div id="montagePorteOperations" style="display:none;">
+        <h4>Montage Porte - Opérations</h4>
+        
+        <!-- PJI Number (رقم الجهاز) -->
+        <div class="scan-section">
+          <h5>📷 Scanner le PJI Number (رقم الجهاز)</h5>
+          <div id="pjiNumberCameraContainer" class="camera-container" style="display:none;"></div>
+          <div id="pjiNumberBarcodeResult" class="barcode-result" style="display:none;"></div>
+          <button id="startPjiNumberScanBtn" class="scan-btn">Scanner PJI Number</button>
+          <button id="stopPjiNumberScanBtn" class="stop-scan-btn" style="display:none;">Fermer la Caméra</button>
+        </div>
+        
+        <div class="montage-inputs">
+          <input type="text" id="pjiNumber" placeholder="PJI Number (رقم الجهاز)">
+          <button class="operation-btn" onclick="recordMontagePorte()">Enregistrer le Montage</button>
+        </div>
+      </div>
+
+      <!-- Parebrise Operations -->
+      <div id="parebriseOperations" style="display:none;">
+        <h4>Parebrise - Opérations</h4>
+        <div class="operation-item">
+          <div class="operation-label">Premier plastique</div>
+          <input type="datetime-local" id="parebrise_premier_plastique_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('premier_plastique', 'parebrise_premier_plastique_time')">Enregistrer</button>
+          </div>
+        </div>
+        <div class="operation-item">
+          <div class="operation-label">Activateur plastique</div>
+          <input type="datetime-local" id="parebrise_activateur_plastique_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('activateur_plastique', 'parebrise_activateur_plastique_time')">Enregistrer</button>
+          </div>
+        </div>
+        <div class="operation-item">
+          <div class="operation-label">Premier bare brise</div>
+          <input type="datetime-local" id="parebrise_premier_bare_brise_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('premier_bare_brise', 'parebrise_premier_bare_brise_time')">Enregistrer</button>
+          </div>
+        </div>
+        <div class="operation-item">
+          <div class="operation-label">Collage bars bris</div>
+          <input type="datetime-local" id="parebrise_collage_bars_bris_time" class="operation-time-input">
+          <div class="operation-action">
+            <button class="operation-btn" onclick="recordOperationWithTime('collage_bars_bris', 'parebrise_collage_bars_bris_time')">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="backToMainBtn" style="background: #6c757d; margin-top: 15px;">← Retour au Menu Principal</button>
+    </div>
+
+    <!-- Modification manuelle -->
+    <div id="manualEdit" style="display:none;">
+      <div class="manual-edit-section">
+        <h3>⚙️ Modification Manuelle</h3>
+        <input type="text" id="editOperatorName" placeholder="Nom de l'opérateur">
+        <input type="text" id="editAssistantName" placeholder="Nom de l'assistant">
+        <select id="editWorkLocation">
+          <option value="Assemblage Porte">Assemblage Porte</option>
+          <option value="Montage vitres">Montage vitres</option>
+          <option value="Montage porte">Montage porte</option>
+          <option value="Parebrise">Parebrise</option>
+        </select>
+        <select id="manualShift">
+          <option value="Matin">Matin</option>
+          <option value="Soir">Soir</option>
+        </select>
+        <select id="manualTeam">
+          <option value="A">A</option>
+          <option value="B">B</option>
+        </select>
+        <select id="manualSupervisor">
+          <option value="Redouane">Redouane</option>
+          <option value="Hind">Hind</option>
+        </select>
+        <button id="startManualSessionBtn" style="background: #28a745;">Démarrer Session avec ces Données</button>
+        <button id="cancelEdit" style="background: #6c757d;">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration Supabase
+    const supabaseUrl = "https://nvjlbhdgtwvytzzjeorr.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52amxiaGRndHd2eXR6emplb3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MTY4MzIsImV4cCI6MjA3NjM5MjgzMn0.YcwKNJ3fhyIQod4KSgq_Loz1CbxDTXQF17E1rWGTmTI";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Variables globales
+    const ACTIVE_SESSION_KEY = 'ops_active_session';
+    let currentSessionData = null;
+    let pjiNumberScanner = null;
+
+    // Gestion de la session active
+    function getActiveSession() {
+      const session = localStorage.getItem(ACTIVE_SESSION_KEY);
+      return session ? JSON.parse(session) : null;
+    }
+
+    function saveActiveSession(sessionData) {
+      sessionData.session_start = new Date().toISOString();
+      localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(sessionData));
+    }
+
+    function clearActiveSession() {
+      localStorage.removeItem(ACTIVE_SESSION_KEY);
+    }
+
+    function disableSessionButtons() {
+      document.getElementById('insertBtn').classList.add('disabled-btn');
+      document.getElementById('editBtn').classList.add('disabled-btn');
+      document.getElementById('insertBtn').disabled = true;
+      document.getElementById('editBtn').disabled = true;
+    }
+
+    function enableSessionButtons() {
+      document.getElementById('insertBtn').classList.remove('disabled-btn');
+      document.getElementById('editBtn').classList.remove('disabled-btn');
+      document.getElementById('insertBtn').disabled = false;
+      document.getElementById('editBtn').disabled = false;
+    }
+
+    function displayActiveSession(session) {
+      document.getElementById('sessionDetails').innerHTML = `
+        Opérateur: ${session.operatorName} | 
+        Assistant: ${session.assistantName} | 
+        Poste: ${session.location}<br>
+        Équipe: ${session.team} | 
+        OPS: ${session.supervisor} | 
+        Shift: ${session.shift}<br>
+        Début: ${new Date(session.session_start).toLocaleTimeString('fr-FR')}
+      `;
+      document.getElementById('activeSessionInfo').style.display = 'block';
+      
+      document.getElementById('operatorName').value = session.operatorName;
+      document.getElementById('assistantName').value = session.assistantName;
+      document.getElementById('workLocation').value = session.location;
+      document.getElementById('shift').textContent = session.shift;
+      document.getElementById('team').textContent = session.team;
+      document.getElementById('supervisor').textContent = session.supervisor;
+      
+      disableSessionButtons();
+    }
+
+    function checkShiftEnd() {
+      const now = new Date();
+      const hour = now.getHours();
+      const currentShift = (hour >= 7 && hour < 15) ? "Matin" : (hour >= 15 && hour < 23) ? "Soir" : "Nuit";
+      
+      const activeSession = getActiveSession();
+      if (activeSession && activeSession.shift !== currentShift) {
+        if (confirm('Le Shift a changé. Voulez-vous terminer la session actuelle?')) {
+          endSession();
+        }
+      }
+    }
+
+    function endSession() {
+      clearActiveSession();
+      enableSessionButtons();
+      document.getElementById('activeSessionInfo').style.display = 'none';
+      document.getElementById('operationsSection').style.display = 'none';
+      document.getElementById('manualEdit').style.display = 'none';
+      document.getElementById('operatorName').value = '';
+      document.getElementById('assistantName').value = '';
+      document.getElementById('workLocation').value = '';
+      document.getElementById('pjiProductNumber').value = '';
+      currentSessionData = null;
+      updateDateTime();
+      alert('Session terminée avec succès!');
+    }
+
+    // Fonctions لمسح PJI Number
+    async function startPjiNumberScanner() {
+      try {
+        document.getElementById('pjiNumberCameraContainer').style.display = 'block';
+        document.getElementById('startPjiNumberScanBtn').style.display = 'none';
+        document.getElementById('stopPjiNumberScanBtn').style.display = 'block';
+        document.getElementById('pjiNumberBarcodeResult').style.display = 'none';
+
+        pjiNumberScanner = new Html5Qrcode("pjiNumberCameraContainer");
+        
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 150 },
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_QR_CODE, Html5QrcodeScanType.SCAN_TYPE_BARCODE]
+        };
+
+        await pjiNumberScanner.start(
+          { facingMode: "environment" },
+          config,
+          onPjiNumberScanSuccess,
+          onScanFailure
+        );
+        
+      } catch (err) {
+        console.error('Erreur caméra PJI Number:', err);
+        alert('Erreur d\'accès à la caméra: ' + err.message);
+        stopPjiNumberScanner();
+      }
+    }
+
+    function onPjiNumberScanSuccess(decodedText, decodedResult) {
+      console.log(`PJI Number scanné: ${decodedText}`);
+      
+      stopPjiNumberScanner();
+      
+      document.getElementById('pjiNumberBarcodeResult').style.display = 'block';
+      document.getElementById('pjiNumberBarcodeResult').innerHTML = `
+        <strong>✅ PJI Number scanné avec succès!</strong><br>
+        ${decodedText}
+      `;
+      
+      document.getElementById('pjiNumber').value = decodedText;
+    }
+
+    function onScanFailure(error) {
+      // Les échecs sont normaux, on les ignore
+    }
+
+    function stopPjiNumberScanner() {
+      if (pjiNumberScanner) {
+        pjiNumberScanner.stop().then(() => {
+          pjiNumberScanner.clear();
+          pjiNumberScanner = null;
+        }).catch(err => {
+          console.error('Erreur arrêt scanner PJI Number:', err);
+        });
+      }
+      
+      document.getElementById('pjiNumberCameraContainer').style.display = 'none';
+      document.getElementById('startPjiNumberScanBtn').style.display = 'block';
+      document.getElementById('stopPjiNumberScanBtn').style.display = 'none';
+    }
+
+    // Fonction للحصول على Product Number من الحقل العلوي
+    function getProductNumber() {
+      return document.getElementById('pjiProductNumber').value.trim();
+    }
+
+    // Fonction للحصول على PJI Number من قسم Montage Porte
+    function getPjiNumber() {
+      return document.getElementById('pjiNumber').value.trim();
+    }
+
+    // Fonction pour enregistrer directement dans la base de données
+    async function recordOperationWithTime(operationType, timeInputId) {
+      const productNumber = getProductNumber();
+      
+      if (!productNumber) {
+        alert('Veuillez d\'abord saisir ou scanner le numéro PJI');
+        return;
+      }
+
+      if (!currentSessionData) {
+        alert('Erreur: Session non initialisée');
+        return;
+      }
+
+      const timeInput = document.getElementById(timeInputId);
+      let operationDateTime;
+      
+      if (timeInput.value) {
+        operationDateTime = new Date(timeInput.value);
+      } else {
+        operationDateTime = new Date();
+        timeInput.value = operationDateTime.toISOString().slice(0, 16);
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("operations_log")
+          .insert([{
+            product_number: productNumber,
+            operation_type: operationType,
+            operator_name: currentSessionData.operatorName,
+            supervisor_name: currentSessionData.supervisor,
+            operation_date: operationDateTime.toLocaleDateString("fr-FR"),
+            operation_time: operationDateTime.toLocaleTimeString("fr-FR"),
+            operation_datetime: operationDateTime.toISOString(),
+            location: currentSessionData.location,
+            shift: currentSessionData.shift,
+            team: currentSessionData.team,
+            assistant_name: currentSessionData.assistantName,
+            pji_product_number: productNumber,
+            is_manual_session: currentSessionData.is_manual || false,
+            session_id: currentSessionData.sessionId || 'default',
+            device_id: currentSessionData.deviceId || 'web'
+          }])
+          .select();
+
+        if (error) {
+          throw error;
+        }
+
+        alert(`✅ Opération "${operationType}" enregistrée\nNuméro PJI: ${productNumber}\nTemps: ${operationDateTime.toLocaleString('fr-FR')}`);
+        
+      } catch (error) {
+        console.error('Erreur enregistrement:', error);
+        alert('❌ Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    }
+
+    // Fonction spéciale pour Montage Porte
+    async function recordMontagePorte() {
+      const productNumber = getProductNumber(); // من الحقل العلوي
+      const pjiNumber = getPjiNumber(); // من قسم Montage Porte
+      
+      if (!productNumber) {
+        alert('Veuillez d\'abord saisir ou scanner le Product Number (رقم البورت) في القسم العلوي');
+        return;
+      }
+
+      if (!pjiNumber) {
+        alert('Veuillez saisir ou scanner le PJI Number (رقم الجهاز)');
+        return;
+      }
+
+      if (!currentSessionData) {
+        alert('Erreur: Session non initialisée');
+        return;
+      }
+
+      const now = new Date();
+      
+      try {
+        const { data, error } = await supabase
+          .from("operations_log")
+          .insert([{
+            product_number: productNumber,
+            operation_type: 'montage_porte',
+            operator_name: currentSessionData.operatorName,
+            supervisor_name: currentSessionData.supervisor,
+            operation_date: now.toLocaleDateString("fr-FR"),
+            operation_time: now.toLocaleTimeString("fr-FR"),
+            operation_datetime: now.toISOString(),
+            location: currentSessionData.location,
+            shift: currentSessionData.shift,
+            team: currentSessionData.team,
+            assistant_name: currentSessionData.assistantName,
+            pji_product_number: pjiNumber,
+            is_manual_session: currentSessionData.is_manual || false,
+            session_id: currentSessionData.sessionId || 'default',
+            device_id: currentSessionData.deviceId || 'web'
+          }])
+          .select();
+
+        if (error) {
+          throw error;
+        }
+
+        alert(`✅ Montage enregistré! \nProduct Number: ${productNumber} \nPJI Number: ${pjiNumber}`);
+        
+        document.getElementById('pjiNumber').value = '';
+        
+      } catch (error) {
+        console.error('Erreur enregistrement:', error);
+        alert('❌ Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    }
+
+    // Afficher les opérations selon le lieu de travail
+    function showOperationsForLocation(location) {
+      document.getElementById('parebriseOperations').style.display = 'none';
+      document.getElementById('assemblagePorteOperations').style.display = 'none';
+      document.getElementById('montageVitresOperations').style.display = 'none';
+      document.getElementById('montagePorteOperations').style.display = 'none';
+
+      switch(location) {
+        case 'Parebrise':
+          document.getElementById('parebriseOperations').style.display = 'block';
+          break;
+        case 'Assemblage Porte':
+          document.getElementById('assemblagePorteOperations').style.display = 'block';
+          break;
+        case 'Montage vitres':
+          document.getElementById('montageVitresOperations').style.display = 'block';
+          break;
+        case 'Montage porte':
+          document.getElementById('montagePorteOperations').style.display = 'block';
+          break;
+      }
+
+      document.getElementById('currentLocation').textContent = location;
+      document.getElementById('operationsSection').style.display = 'block';
+    }
+
+    // Mise à jour de l'heure, date et numéro de semaine
+    function updateDateTime() {
+      const now = new Date();
+      const weekNumber = Math.ceil((((now - new Date(now.getFullYear(), 0, 1)) / 86400000) + now.getDay() + 1) / 7);
+      document.getElementById("weekInfo").textContent = "Numéro de semaine: " + weekNumber;
+      document.getElementById("dateInfo").textContent = "📆 Date: " + now.toLocaleDateString("fr-FR");
+      document.getElementById("timeInfo").textContent = "⏰ Heure: " + now.toLocaleTimeString("fr-FR");
+
+      const hour = now.getHours();
+      const shift = (hour >= 7 && hour < 15) ? "Matin" : (hour >= 15 && hour < 23) ? "Soir" : "Hors horaires de travail";
+      
+      if (!getActiveSession()) {
+        document.getElementById("shift").textContent = shift;
+
+        let team;
+        if (weekNumber % 2 === 0) {
+          team = (shift === "Matin") ? "B" : "A";
+        } else {
+          team = (shift === "Matin") ? "A" : "B";
+        }
+        document.getElementById("team").textContent = team;
+
+        const supervisor = (team === "A") ? "Redouane" : "Hind";
+        document.getElementById("supervisor").textContent = supervisor;
+      }
+    }
+
+    // Fonctions pour la recherche
+    function switchSearchTab(tab) {
+      // Mettre à jour les onglets
+      document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.search-tab-content').forEach(c => c.style.display = 'none');
+      
+      if (tab === 'product') {
+        document.querySelector('.search-tab:nth-child(1)').classList.add('active');
+        document.getElementById('productSearchTab').style.display = 'block';
+      } else {
+        document.querySelector('.search-tab:nth-child(2)').classList.add('active');
+        document.getElementById('pjiSearchTab').style.display = 'block';
+      }
+      
+      document.getElementById('searchResults').style.display = 'none';
+    }
+
+    async function searchByProductNumber() {
+      const productNumber = document.getElementById('searchProductNumber').value.trim();
+      
+      if (!productNumber) {
+        alert('Veuillez entrer un Product Number');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('operations_log')
+          .select('*')
+          .eq('product_number', productNumber)
+          .order('operation_datetime', { ascending: true });
+
+        if (error) throw error;
+
+        // Rechercher le PJI Number correspondant depuis Montage Porte
+        const { data: pjiData, error: pjiError } = await supabase
+          .from('operations_log')
+          .select('pji_product_number')
+          .eq('product_number', productNumber)
+          .eq('location', 'Montage porte')
+          .not('pji_product_number', 'is', null)
+          .limit(1);
+
+        if (pjiError) throw pjiError;
+
+        const pjiNumber = pjiData && pjiData.length > 0 ? pjiData[0].pji_product_number : null;
+
+        displayProductReport(data, productNumber, pjiNumber);
+        
+      } catch (error) {
+        console.error('Erreur recherche:', error);
+        alert('❌ Erreur lors de la recherche: ' + error.message);
+      }
+    }
+
+    async function searchByPjiNumber() {
+      const pjiNumber = document.getElementById('searchPjiNumber').value.trim();
+      
+      if (!pjiNumber) {
+        alert('Veuillez entrer un PJI Number');
+        return;
+      }
+
+      try {
+        // Rechercher tous les Product Numbers associés à ce PJI Number
+        const { data: pjiData, error: pjiError } = await supabase
+          .from('operations_log')
+          .select('product_number')
+          .eq('pji_product_number', pjiNumber)
+          .not('product_number', 'is', null);
+
+        if (pjiError) throw pjiError;
+
+        if (!pjiData || pjiData.length === 0) {
+          document.getElementById('resultsContent').innerHTML = '<p>Aucun résultat trouvé pour ce PJI Number</p>';
+          document.getElementById('searchResults').style.display = 'block';
+          return;
+        }
+
+        // Obtenir tous les Product Numbers uniques
+        const productNumbers = [...new Set(pjiData.map(item => item.product_number))];
+        
+        let allResults = [];
+        
+        // Pour chaque Product Number, récupérer toutes les opérations
+        for (const productNumber of productNumbers) {
+          const { data: productData, error: productError } = await supabase
+            .from('operations_log')
+            .select('*')
+            .eq('product_number', productNumber)
+            .order('operation_datetime', { ascending: true });
+
+          if (productError) throw productError;
+          
+          if (productData) {
+            allResults = allResults.concat(productData);
+          }
+        }
+
+        displayPjiReport(allResults, pjiNumber, productNumbers);
+        
+      } catch (error) {
+        console.error('Erreur recherche:', error);
+        alert('❌ Erreur lors de la recherche: ' + error.message);
+      }
+    }
+
+    function displayProductReport(data, productNumber, pjiNumber) {
+      const resultsDiv = document.getElementById('resultsContent');
+      
+      if (!data || data.length === 0) {
+        resultsDiv.innerHTML = '<p>Aucun résultat trouvé pour ce Product Number</p>';
+        document.getElementById('searchResults').style.display = 'block';
+        return;
+      }
+
+      let html = `
+        <div class="report-header">
+          📊 Rapport pour Product Number: ${productNumber}
+        </div>
+      `;
+
+      // Afficher le PJI Number correspondant s'il existe
+      if (pjiNumber) {
+        html += `
+          <div class="pji-info">
+            <strong>🔗 PJI Number associé:</strong> ${pjiNumber}
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="report-item">
+          <strong>Historique des opérations:</strong>
+      `;
+
+      // Grouper par emplacement
+      const groupedByLocation = {};
+      data.forEach(record => {
+        if (!groupedByLocation[record.location]) {
+          groupedByLocation[record.location] = [];
+        }
+        groupedByLocation[record.location].push(record);
+      });
+
+      for (const [location, records] of Object.entries(groupedByLocation)) {
+        const badgeClass = location === 'Montage porte' ? 'montage-badge' : 'location-badge';
+        
+        html += `
+          <div style="margin: 10px 0;">
+            <div class="${badgeClass}">${location}</div>
+            <div style="margin-left: 20px;">
+        `;
+        
+        records.forEach(record => {
+          // Pour Montage Porte, afficher le PJI Number
+          const pjiInfo = location === 'Montage porte' && record.pji_product_number ? 
+            `<br><strong>🔗 PJI Number:</strong> ${record.pji_product_number}` : '';
+          
+          html += `
+            <div class="operation-record">
+              <strong>Opération:</strong> ${record.operation_type}
+              ${pjiInfo}<br>
+              <strong>Date:</strong> ${record.operation_date} <strong>Heure:</strong> ${record.operation_time}<br>
+              <strong>Opérateur:</strong> ${record.operator_name}<br>
+              <strong>OPS:</strong> ${record.supervisor_name}<br>
+              <strong>Équipe:</strong> ${record.team} | <strong>Shift:</strong> ${record.shift}
+            </div>
+          `;
+        });
+        
+        html += `</div></div>`;
+      }
+
+      html += `</div>`;
+      resultsDiv.innerHTML = html;
+      document.getElementById('searchResults').style.display = 'block';
+    }
+
+    function displayPjiReport(data, pjiNumber, productNumbers) {
+      const resultsDiv = document.getElementById('resultsContent');
+      
+      let html = `
+        <div class="report-header">
+          📊 Rapport pour PJI Number: ${pjiNumber}
+        </div>
+        <div class="report-item">
+          <strong>Product Numbers associés:</strong> ${productNumbers.join(', ')}
+        </div>
+      `;
+
+      // Pour chaque Product Number, afficher son historique
+      productNumbers.forEach(productNumber => {
+        const productRecords = data.filter(record => record.product_number === productNumber);
+        
+        html += `
+          <div class="report-item">
+            <strong>Product Number: ${productNumber}</strong>
+            <div style="margin-left: 15px;">
+        `;
+
+        // Grouper par emplacement
+        const groupedByLocation = {};
+        productRecords.forEach(record => {
+          if (!groupedByLocation[record.location]) {
+            groupedByLocation[record.location] = [];
+          }
+          groupedByLocation[record.location].push(record);
+        });
+
+        for (const [location, records] of Object.entries(groupedByLocation)) {
+          const badgeClass = location === 'Montage porte' ? 'montage-badge' : 'location-badge';
+          
+          html += `
+            <div style="margin: 8px 0;">
+              <div class="${badgeClass}">${location}</div>
+              <div style="margin-left: 15px;">
+          `;
+          
+          records.forEach(record => {
+            // Pour Montage Porte, afficher le PJI Number
+            const pjiInfo = location === 'Montage porte' && record.pji_product_number ? 
+              `<br><strong>🔗 PJI Number:</strong> ${record.pji_product_number}` : '';
+            
+            html += `
+              <div class="operation-record">
+                <strong>Opération:</strong> ${record.operation_type}
+                ${pjiInfo}<br>
+                <strong>Date:</strong> ${record.operation_date} <strong>Heure:</strong> ${record.operation_time}<br>
+                <strong>Opérateur:</strong> ${record.operator_name}<br>
+                <strong>OPS:</strong> ${record.supervisor_name}
+              </div>
+            `;
+          });
+          
+          html += `</div></div>`;
+        }
+
+        html += `</div></div>`;
+      });
+
+      resultsDiv.innerHTML = html;
+      document.getElementById('searchResults').style.display = 'block';
+    }
+
+    // Initialisation
+    function init() {
+      setInterval(updateDateTime, 1000);
+      updateDateTime();
+      
+      const activeSession = getActiveSession();
+      if (activeSession) {
+        currentSessionData = activeSession;
+        displayActiveSession(activeSession);
+        showOperationsForLocation(activeSession.location);
+        checkShiftEnd();
+      }
+      
+      setInterval(checkShiftEnd, 300000);
+    }
+
+    // Événements
+    document.getElementById("insertBtn").addEventListener("click", async () => {
+      const name = document.getElementById("operatorName").value.trim();
+      const assistant = document.getElementById("assistantName").value.trim();
+      const location = document.getElementById("workLocation").value;
+
+      if (!name) return alert("Veuillez saisir le nom de l'opérateur");
+      if (!location) return alert("Veuillez sélectionner le poste de travail");
+
+      currentSessionData = {
+        operatorName: name,
+        assistantName: assistant,
+        location: location,
+        shift: document.getElementById("shift").textContent,
+        team: document.getElementById("team").textContent,
+        supervisor: document.getElementById("supervisor").textContent,
+        is_manual: false,
+        sessionId: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        deviceId: 'device_' + navigator.userAgent.replace(/\s+/g, '_').substr(0, 50)
+      };
+
+      saveActiveSession(currentSessionData);
+      displayActiveSession(currentSessionData);
+      showOperationsForLocation(location);
+      alert("✅ Session automatique démarrée! Les boutons sont maintenant désactivés.");
+    });
+
+    document.getElementById("editBtn").addEventListener("click", () => {
+      const activeSession = getActiveSession();
+      if (activeSession) {
+        alert("❌ Une session est déjà active. Terminez-la d'abord.");
+        return;
+      }
+      
+      document.getElementById("editOperatorName").value = document.getElementById("operatorName").value;
+      document.getElementById("editAssistantName").value = document.getElementById("assistantName").value;
+      document.getElementById("editWorkLocation").value = document.getElementById("workLocation").value;
+      document.getElementById("manualShift").value = document.getElementById("shift").textContent;
+      document.getElementById("manualTeam").value = document.getElementById("team").textContent;
+      document.getElementById("manualSupervisor").value = document.getElementById("supervisor").textContent;
+      
+      document.getElementById("manualEdit").style.display = "block";
+    });
+
+    document.getElementById("startManualSessionBtn").addEventListener("click", () => {
+      const name = document.getElementById("editOperatorName").value.trim();
+      const assistant = document.getElementById("editAssistantName").value.trim();
+      const location = document.getElementById("editWorkLocation").value;
+      const shift = document.getElementById("manualShift").value;
+      const team = document.getElementById("manualTeam").value;
+      const supervisor = document.getElementById("manualSupervisor").value;
+
+      if (!name) return alert("Veuillez saisir le nom de l'opérateur");
+      if (!location) return alert("Veuillez sélectionner le poste de travail");
+
+      currentSessionData = {
+        operatorName: name,
+        assistantName: assistant,
+        location: location,
+        shift: shift,
+        team: team,
+        supervisor: supervisor,
+        is_manual: true,
+        sessionId: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        deviceId: 'device_' + navigator.userAgent.replace(/\s+/g, '_').substr(0, 50)
+      };
+
+      saveActiveSession(currentSessionData);
+      displayActiveSession(currentSessionData);
+      document.getElementById("manualEdit").style.display = "none";
+      showOperationsForLocation(location);
+      alert("✅ Session manuelle démarrée! Les boutons sont maintenant désactivés.");
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      if (confirm('Êtes-vous sûr de vouloir terminer la session?')) {
+        endSession();
+      }
+    });
+
+    document.getElementById("backToMainBtn").addEventListener("click", () => {
+      document.getElementById("operationsSection").style.display = "none";
+      stopPjiNumberScanner();
+    });
+
+    document.getElementById("backFromSearchBtn").addEventListener("click", () => {
+      document.getElementById("searchSection").style.display = "none";
+    });
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      document.getElementById("searchSection").style.display = "block";
+    });
+
+    document.getElementById("validateProductBtn").addEventListener("click", () => {
+      const productNumber = document.getElementById("pjiProductNumber").value.trim();
+      if (!productNumber) {
+        alert("Veuillez saisir ou scanner le numéro PJI");
+      } else {
+        alert(`Produit PJI ${productNumber} validé! Vous pouvez maintenant enregistrer les opérations.`);
+      }
+    });
+
+    document.getElementById("cancelEdit").addEventListener("click", () => {
+      document.getElementById("manualEdit").style.display = "none";
+    });
+
+    // Événements لمسح PJI Number
+    document.getElementById("startPjiNumberScanBtn").addEventListener("click", startPjiNumberScanner);
+    document.getElementById("stopPjiNumberScanBtn").addEventListener("click", stopPjiNumberScanner);
+
+    // Démarrer l'application
+    init();
+  </script>
+</body>
+</html>
