@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <style>
+    /* جميع الأنماط تبقى كما هي */
     * {
       box-sizing: border-box;
     }
@@ -516,7 +517,134 @@
     // Variables globales
     const ACTIVE_SESSION_KEY = 'ops_active_session';
     let currentSessionData = null;
+    let html5QrcodeScanner = null;
     let pjiNumberScanner = null;
+
+    // ========== وظائف مسح الرمز الشريطي ==========
+
+    // دالة مسح الرمز الشريطي الرئيسي
+    async function startBarcodeScanner() {
+      try {
+        document.getElementById('cameraContainer').style.display = 'block';
+        document.getElementById('startScanBtn').style.display = 'none';
+        document.getElementById('stopScanBtn').style.display = 'block';
+        document.getElementById('barcodeResult').style.display = 'none';
+
+        html5QrcodeScanner = new Html5Qrcode("cameraContainer");
+        
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 150 }
+        };
+
+        await html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          onBarcodeScanSuccess,
+          onScanFailure
+        );
+        
+      } catch (err) {
+        console.error('Erreur caméra:', err);
+        alert('Erreur d\'accès à la caméra: ' + err.message);
+        stopBarcodeScanner();
+      }
+    }
+
+    // دالة إيقاف المسح الرئيسي
+    function stopBarcodeScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner.clear();
+          html5QrcodeScanner = null;
+        }).catch(err => {
+          console.error('Erreur arrêt scanner:', err);
+        });
+      }
+      
+      document.getElementById('cameraContainer').style.display = 'none';
+      document.getElementById('startScanBtn').style.display = 'block';
+      document.getElementById('stopScanBtn').style.display = 'none';
+    }
+
+    // دالة النجاح في مسح الرمز الشريطي الرئيسي
+    function onBarcodeScanSuccess(decodedText, decodedResult) {
+      console.log(`Code barre scanné: ${decodedText}`);
+      
+      stopBarcodeScanner();
+      
+      document.getElementById('barcodeResult').style.display = 'block';
+      document.getElementById('barcodeResult').innerHTML = `
+        <strong>✅ Code barre scanné avec succès!</strong><br>
+        ${decodedText}
+      `;
+      
+      document.getElementById('pjiProductNumber').value = decodedText;
+    }
+
+    // Fonctions لمسح PJI Number
+    async function startPjiNumberScanner() {
+      try {
+        document.getElementById('pjiNumberCameraContainer').style.display = 'block';
+        document.getElementById('startPjiNumberScanBtn').style.display = 'none';
+        document.getElementById('stopPjiNumberScanBtn').style.display = 'block';
+        document.getElementById('pjiNumberBarcodeResult').style.display = 'none';
+
+        pjiNumberScanner = new Html5Qrcode("pjiNumberCameraContainer");
+        
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 150 }
+        };
+
+        await pjiNumberScanner.start(
+          { facingMode: "environment" },
+          config,
+          onPjiNumberScanSuccess,
+          onScanFailure
+        );
+        
+      } catch (err) {
+        console.error('Erreur caméra PJI Number:', err);
+        alert('Erreur d\'accès à la caméra: ' + err.message);
+        stopPjiNumberScanner();
+      }
+    }
+
+    function onPjiNumberScanSuccess(decodedText, decodedResult) {
+      console.log(`PJI Number scanné: ${decodedText}`);
+      
+      stopPjiNumberScanner();
+      
+      document.getElementById('pjiNumberBarcodeResult').style.display = 'block';
+      document.getElementById('pjiNumberBarcodeResult').innerHTML = `
+        <strong>✅ PJI Number scanné avec succès!</strong><br>
+        ${decodedText}
+      `;
+      
+      document.getElementById('pjiNumber').value = decodedText;
+    }
+
+    function onScanFailure(error) {
+      // Les échecs sont normaux, on les ignore
+    }
+
+    function stopPjiNumberScanner() {
+      if (pjiNumberScanner) {
+        pjiNumberScanner.stop().then(() => {
+          pjiNumberScanner.clear();
+          pjiNumberScanner = null;
+        }).catch(err => {
+          console.error('Erreur arrêt scanner PJI Number:', err);
+        });
+      }
+      
+      document.getElementById('pjiNumberCameraContainer').style.display = 'none';
+      document.getElementById('startPjiNumberScanBtn').style.display = 'block';
+      document.getElementById('stopPjiNumberScanBtn').style.display = 'none';
+    }
+
+    // ========== باقي الوظائف تبقى كما هي ==========
 
     // Gestion de la session active
     function getActiveSession() {
@@ -595,69 +723,6 @@
       currentSessionData = null;
       updateDateTime();
       alert('Session terminée avec succès!');
-    }
-
-    // Fonctions لمسح PJI Number
-    async function startPjiNumberScanner() {
-      try {
-        document.getElementById('pjiNumberCameraContainer').style.display = 'block';
-        document.getElementById('startPjiNumberScanBtn').style.display = 'none';
-        document.getElementById('stopPjiNumberScanBtn').style.display = 'block';
-        document.getElementById('pjiNumberBarcodeResult').style.display = 'none';
-
-        pjiNumberScanner = new Html5Qrcode("pjiNumberCameraContainer");
-        
-        const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 150 },
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_QR_CODE, Html5QrcodeScanType.SCAN_TYPE_BARCODE]
-        };
-
-        await pjiNumberScanner.start(
-          { facingMode: "environment" },
-          config,
-          onPjiNumberScanSuccess,
-          onScanFailure
-        );
-        
-      } catch (err) {
-        console.error('Erreur caméra PJI Number:', err);
-        alert('Erreur d\'accès à la caméra: ' + err.message);
-        stopPjiNumberScanner();
-      }
-    }
-
-    function onPjiNumberScanSuccess(decodedText, decodedResult) {
-      console.log(`PJI Number scanné: ${decodedText}`);
-      
-      stopPjiNumberScanner();
-      
-      document.getElementById('pjiNumberBarcodeResult').style.display = 'block';
-      document.getElementById('pjiNumberBarcodeResult').innerHTML = `
-        <strong>✅ PJI Number scanné avec succès!</strong><br>
-        ${decodedText}
-      `;
-      
-      document.getElementById('pjiNumber').value = decodedText;
-    }
-
-    function onScanFailure(error) {
-      // Les échecs sont normaux, on les ignore
-    }
-
-    function stopPjiNumberScanner() {
-      if (pjiNumberScanner) {
-        pjiNumberScanner.stop().then(() => {
-          pjiNumberScanner.clear();
-          pjiNumberScanner = null;
-        }).catch(err => {
-          console.error('Erreur arrêt scanner PJI Number:', err);
-        });
-      }
-      
-      document.getElementById('pjiNumberCameraContainer').style.display = 'none';
-      document.getElementById('startPjiNumberScanBtn').style.display = 'block';
-      document.getElementById('stopPjiNumberScanBtn').style.display = 'none';
     }
 
     // Fonction للحصول على Product Number من الحقل العلوي
@@ -1182,6 +1247,7 @@
 
     document.getElementById("backToMainBtn").addEventListener("click", () => {
       document.getElementById("operationsSection").style.display = "none";
+      stopBarcodeScanner();
       stopPjiNumberScanner();
     });
 
@@ -1206,6 +1272,10 @@
       document.getElementById("manualEdit").style.display = "none";
     });
 
+    // إضافة الأحداث المفقودة للمسح الضوئي
+    document.getElementById("startScanBtn").addEventListener("click", startBarcodeScanner);
+    document.getElementById("stopScanBtn").addEventListener("click", stopBarcodeScanner);
+    
     // Événements لمسح PJI Number
     document.getElementById("startPjiNumberScanBtn").addEventListener("click", startPjiNumberScanner);
     document.getElementById("stopPjiNumberScanBtn").addEventListener("click", stopPjiNumberScanner);
